@@ -1,0 +1,735 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/styles.css">
+    <title>Эпидемия</title>
+</head>
+
+<body>
+    <div class="title">
+        <h1>Анализ эпидемиологической ситуации</h1>
+    </div>
+    <div class="tables">
+        <div class="main-column">
+            <table style="border: 1px solid black;">
+                <caption>Исследуемые показатели</caption>
+                <thead>
+                    <tr>
+                        <th>Название параметра</th>
+                        <th>Значение</th>
+                        <th>Предел</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>L<sub>1</sub>:</b> Летальность</td>
+                        <td><input type="number" name="" id="L1"></td>
+                        <td><input type="number" name="" id="L1_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>2</sub>:</b> Численность инфицированных</td>
+                        <td><input type="number" name="" id="L2"></td>
+                        <td><input type="number" name="" id="L2_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>3</sub>:</b> Численность населения региона</td>
+                        <td><input type="number" name="" id="L3"></td>
+                        <td><input type="number" name="" id="L3_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>4</sub>:</b> Численность госпитализированных</td>
+                        <td><input type="number" name="" id="L4"></td>
+                        <td><input type="number" name="" id="L4_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>5</sub>:</b> Изолированность</td>
+                        <td><input type="number" name="" id="L5"></td>
+                        <td><input type="number" name="" id="L5_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>6</sub>:</b> Скорость распространения</td>
+                        <td><input type="number" name="" id="L6"></td>
+                        <td><input type="number" name="" id="L6_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>7</sub>:</b> Доступность лекарства</td>
+                        <td><input type="number" name="" id="L7"></td>
+                        <td><input type="number" name="" id="L7_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>8</sub>:</b> Тяжесть симптомов</td>
+                        <td><input type="number" name="" id="L8"></td>
+                        <td><input type="number" name="" id="L8_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>9</sub>:</b> Количество умерших от заболевания</td>
+                        <td><input type="number" name="" id="L9"></td>
+                        <td><input type="number" name="" id="L9_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>10</sub>:</b> Уровень медицины</td>
+                        <td><input type="number" name="" id="L10"></td>
+                        <td><input type="number" name="" id="L10_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>11</sub>:</b> Длительность инкубационного периода</td>
+                        <td><input type="number" name="" id="L11"></td>
+                        <td><input type="number" name="" id="L11_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>12</sub>:</b> Длительность периода полного развития болезни</td>
+                        <td><input type="number" name="" id="L12"></td>
+                        <td><input type="number" name="" id="L12_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>13</sub>:</b> Длительность реабилитационного периода</td>
+                        <td><input type="number" name="" id="L13"></td>
+                        <td><input type="number" name="" id="L13_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>14</sub>:</b> Устойчивость вируса к лекарствам</td>
+                        <td><input type="number" name="" id="L14"></td>
+                        <td><input type="number" name="" id="L14_max"></td>
+                    </tr>
+                    <tr>
+                        <td><b>L<sub>15</sub>:</b> Степень осложнений заболевания</td>
+                        <td><input type="number" name="" id="L15"></td>
+                        <td><input type="number" name="" id="L15_max"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="text-align: center; margin-top: 10px;">
+                <div>
+                    <button id="random">Заполнить случайными переменными</button>
+                    <input type="number" id="chanceInput" value="0.9" step="0.01" min="0" max="1">
+                </div>
+                <button id="saveValuesToJson">Сохранить значения</button>
+                <button id="loadValuesFromJson">Загрузить значения</button>
+                <button id="calculate" style="height: 50px;">Вычислить результат</button>
+            </div>
+            <h1 style="margin-top: 30px; margin-left: 20px">Последние результаты: </h1>
+            <div id="results" style="text-align: center; margin-top: 20px;">
+            </div>
+        </div>
+
+        <div class="secondary-column">
+            <table style="border: 1px solid black; text-align: center;">
+                <caption>Уравнения</caption>
+                <tbody id="equationsTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const resultDiv = document.getElementById("results");
+
+            // Получаем результаты из localStorage
+            const savedResults = JSON.parse(localStorage.getItem("savedResults")) || { results: [] };
+
+            // Перебираем результаты в обратном порядке и добавляем их в DOM
+            savedResults.results.reverse().forEach(result => {
+                const resultItem = `
+                    <div class="result-item">
+                        <img src="data:image/png;base64,${result.img1}" alt="График 1">
+                        <img src="data:image/png;base64,${result.img2}" alt="График 2">
+                    </div>
+                `;
+                resultDiv.innerHTML += resultItem;
+            });
+        });
+    </script>
+    <script>
+        const numberOfEquations = 28; // Количество уравнений
+
+        async function loadVariables() {
+            try {
+                // Fetch JSON from the server
+                const response = await fetch('/get-json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.functionsInfo;
+            } catch (error) {
+                console.error('Error loading JSON:', error);
+                return [];
+            }
+        }
+
+        async function generateEquations() {
+            const equationsTable = document.getElementById('equationsTable');
+
+            const functionsInfo = await loadVariables();
+
+            functionsInfo.forEach((func, index) => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td class="equation">
+                        f<sub>${index + 1}</sub> = <input type="number" id="a${index + 1}">L<sub>${func.variable}</sub>(t)<sup>3</sup> +
+                        <input type="number" id="b${index + 1}">L<sub>${func.variable}</sub>(t)<sup>2</sup> +
+                        <input type="number" id="c${index + 1}">L<sub>${func.variable}</sub>(t) +
+                        <input type="number" id="d${index + 1}">
+                    </td>
+                `;
+                equationsTable.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', generateEquations);
+    </script>
+    <script>
+        document.getElementById("random").addEventListener("click", randomizeValues);
+        function randomizeValues() {
+            const chanceInput = document.getElementById("chanceInput").value;
+            const zeroChance = parseFloat(chanceInput);
+
+            function getRandomValue() {
+                return Math.random();
+            }
+
+            function getConditionalRandom() {
+                return Math.random() > zeroChance ? getRandomValue() : 0.0;
+            }
+
+            for (let i = 1; i <= 15; i++) {
+                var randomVal = getRandomValue().toFixed(2);
+                document.getElementById(`L${i}`).value = randomVal;
+                document.getElementById(`L${i}_max`).value = randomVal;
+            }
+
+            for (let i = 1; i <= 28; i++) {
+                document.getElementById(`a${i}`).value = getConditionalRandom().toFixed(2)
+                document.getElementById(`b${i}`).value = getConditionalRandom().toFixed(2)
+                document.getElementById(`c${i}`).value = getConditionalRandom().toFixed(2)
+                document.getElementById(`d${i}`).value = getConditionalRandom().toFixed(2)
+            }
+        }
+    </script>
+    <script>
+        document.getElementById("calculate").addEventListener("click", function() {
+            const formData = new FormData();
+
+            // Собираем значения L1-L15 (startValues) как числа
+            const startValues = [];
+            for (let i = 1; i <= 15; i++) {
+                const value = parseFloat(document.getElementById(`L${i}`).value) || 0;
+                startValues.push(value);
+            }
+            formData.append('startValues', JSON.stringify(startValues));
+
+            // Собираем значения L1-L15 MAX (maxValues) как числа
+            const maxValues = [];
+            for (let i = 1; i <= 15; i++) {
+                const value = parseFloat(document.getElementById(`L${i}_max`).value) || 0;
+                maxValues.push(value);
+            }
+            formData.append('maxValues', JSON.stringify(maxValues));
+
+            // Собираем коэффициенты уравнений a1, b1, c1, d1 и т.д. как числа
+            const coefs = [];
+            for (let i = 1; i <= 28; i++) {
+                const a = parseFloat(document.getElementById(`a${i}`).value) || 0;
+                const b = parseFloat(document.getElementById(`b${i}`).value) || 0;
+                const c = parseFloat(document.getElementById(`c${i}`).value) || 0;
+                const d = parseFloat(document.getElementById(`d${i}`).value) || 0;
+                coefs.push([a, b, c, d]);
+            }
+            formData.append('coefs', JSON.stringify(coefs));
+
+            fetch("/calculate/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById("results");
+
+                // Форматируем новый результат
+                const newResult = `
+                    <div class="result-item">
+                        <img src="data:image/png;base64,${data.image1}" alt="График 1">
+                        <img src="data:image/png;base64,${data.image2}" alt="График 2">
+                    </div>
+                `;
+
+                // Добавляем новый результат в начало
+                resultDiv.innerHTML = newResult + resultDiv.innerHTML;
+
+                // Работа с localStorage
+                const savedResults = JSON.parse(localStorage.getItem("savedResults")) || { results: [] };
+
+                // Добавляем новые изображения в localStorage
+                savedResults.results.unshift({ img1: data.image1, img2: data.image2 });
+
+                // Ограничиваем количество сохраненных результатов (например, до 10)
+                if (savedResults.results.length > 10) {
+                    savedResults.results.pop();
+                }
+
+                // Сохраняем обновленный список в localStorage
+                localStorage.setItem("savedResults", JSON.stringify(savedResults));
+            })
+            .catch(error => console.error('Ошибка:', error));
+        });
+    </script>
+    <script>
+        document.getElementById("saveValuesToJson").addEventListener("click", function saveToJson() {
+            // Собираем значения L1-L15 (startValues) как числа
+            const startValues = [];
+            for (let i = 1; i <= 15; i++) {
+                const value = parseFloat(document.getElementById(`L${i}`).value) || 0;
+                startValues.push(value);
+            }
+
+            // Собираем значения L1-L15 MAX (maxValues) как числа
+            const maxValues = [];
+            for (let i = 1; i <= 15; i++) {
+                const value = parseFloat(document.getElementById(`L${i}_max`).value) || 0;
+                maxValues.push(value);
+            }
+
+            // Собираем коэффициенты уравнений a1, b1, c1, d1 и т.д. как числа
+            const coefs = [];
+            for (let i = 1; i <= 28; i++) {
+                const a = parseFloat(document.getElementById(`a${i}`).value) || 0;
+                const b = parseFloat(document.getElementById(`b${i}`).value) || 0;
+                const c = parseFloat(document.getElementById(`c${i}`).value) || 0;
+                const d = parseFloat(document.getElementById(`d${i}`).value) || 0;
+                coefs.push([a, b, c, d]);
+            }
+
+            // Создаем объект для сохранения
+            const data = {
+                startValues,
+                maxValues,
+                coefs
+            };
+
+            // Преобразуем объект в JSON строку
+            const jsonData = JSON.stringify(data, null, 2);
+
+            // Создаем Blob и ссылку для скачивания
+            const blob = new Blob([jsonData], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            // Создаем временную ссылку и инициируем скачивание
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "data.json"; // Название файла
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        })
+    </script>
+    <script>
+        function loadFromJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const jsonData = JSON.parse(e.target.result);
+
+                // Заполнение значений в полях
+                jsonData.startValues.forEach((value, index) => {
+                    document.getElementById(`L${index + 1}`).value = value;
+                });
+
+                jsonData.maxValues.forEach((value, index) => {
+                    document.getElementById(`L${index + 1}_max`).value = value;
+                });
+
+                jsonData.coefs.forEach((coef, index) => {
+                    document.getElementById(`a${index + 1}`).value = coef[0];
+                    document.getElementById(`b${index + 1}`).value = coef[1];
+                    document.getElementById(`c${index + 1}`).value = coef[2];
+                    document.getElementById(`d${index + 1}`).value = coef[3];
+                });
+
+                // Удаляем временный input
+                event.target.remove();
+            };
+
+            reader.readAsText(file);
+        }
+        document.getElementById('loadValuesFromJson').addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = loadFromJson;
+            fileInput.style.width = 0;
+            document.body.appendChild(fileInput); // Добавляем в DOM, чтобы его можно было использовать
+            fileInput.click();
+        });
+    </script>
+</body>
+
+
+</html>
+   -->
+
+   <!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Эпидемиологический анализ</title>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1><i class="fas fa-chart-line"></i> Анализ эпидемиологической ситуации</h1>
+            <div class="header-actions">
+                <button id="saveValuesToJson" class="btn-secondary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button id="loadValuesFromJson" class="btn-secondary">
+                    <i class="fas fa-folder-open"></i> Загрузить
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="main-content">
+            <section class="card parameters-card">
+                <h2><i class="fas fa-sliders-h"></i> Исследуемые показатели</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Значение</th>
+                                <th>Предел</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="param-label">L<sub>1</sub>:</span> Летальность</td>
+                                <td><input type="number" class="input-value" id="L1" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L1_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>2</sub>:</span> Численность инфицированных</td>
+                                <td><input type="number" class="input-value" id="L2" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L2_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>3</sub>:</span> Численность населения региона</td>
+                                <td><input type="number" class="input-value" id="L3" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L3_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>4</sub>:</span> Численность госпитализированных</td>
+                                <td><input type="number" class="input-value" id="L4" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L4_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>5</sub>:</span> Изолированность</td>
+                                <td><input type="number" class="input-value" id="L5" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L5_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>6</sub>:</span> Скорость распространения</td>
+                                <td><input type="number" class="input-value" id="L6" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L6_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>7</sub>:</span> Доступность лекарства</td>
+                                <td><input type="number" class="input-value" id="L7" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L7_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>8</sub>:</span> Тяжесть симптомов</td>
+                                <td><input type="number" class="input-value" id="L8" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L8_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>9</sub>:</span> Количество умерших от заболевания</td>
+                                <td><input type="number" class="input-value" id="L9" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L9_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>10</sub>:</span> Уровень медицины</td>
+                                <td><input type="number" class="input-value" id="L10" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L10_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>11</sub>:</span> Длительность инкубационного периода</td>
+                                <td><input type="number" class="input-value" id="L11" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L11_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>12</sub>:</span> Длительность периода полного развития болезни</td>
+                                <td><input type="number" class="input-value" id="L12" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L12_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>13</sub>:</span> Длительность реабилитационного периода</td>
+                                <td><input type="number" class="input-value" id="L13" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L13_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>14</sub>:</span> Устойчивость вируса к лекарствам</td>
+                                <td><input type="number" class="input-value" id="L14" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L14_max" placeholder="0.0"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-label">L<sub>15</sub>:</span> Степень осложнений заболевания</td>
+                                <td><input type="number" class="input-value" id="L15" placeholder="0.0"></td>
+                                <td><input type="number" class="input-limit" id="L15_max" placeholder="0.0"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card actions-card">
+                <div class="random-section">
+                    <div class="random-controls">
+                        <button id="random" class="btn-warning">
+                            <i class="fas fa-random"></i> Случайные значения
+                        </button>
+                        <div class="chance-control">
+                            <label for="chanceInput">Вероятность нуля:</label>
+                            <input type="range" id="chanceInput" min="0" max="1" step="0.01" value="0.9">
+                            <span id="chanceValue">0.9</span>
+                        </div>
+                    </div>
+                    <button id="calculate" class="btn-primary">
+                        <i class="fas fa-calculator"></i> Вычислить результат
+                    </button>
+                </div>
+            </section>
+
+            <section class="card results-card">
+                <h2><i class="fas fa-history"></i> Последние результаты</h2>
+                <div id="results" class="results-container">
+                    <!-- Результаты будут здесь -->
+                </div>
+            </section>
+        </div>
+
+        <aside class="sidebar">
+            <section class="card equations-card">
+                <h2><i class="fas fa-square-root-alt"></i> Уравнения модели</h2>
+                <div class="table-container">
+                    <table>
+                        <tbody id="equationsTable">
+                            <!-- Уравнения будут здесь -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const resultDiv = document.getElementById("results");
+            const savedResults = JSON.parse(localStorage.getItem("savedResults")) || { results: [] };
+            
+            savedResults.results.reverse().forEach(result => {
+                const resultItem = `
+                    <div class="result-item">
+                        <img src="data:image/png;base64,${result.img1}" alt="График 1">
+                        <img src="data:image/png;base64,${result.img2}" alt="График 2">
+                    </div>
+                `;
+                resultDiv.innerHTML += resultItem;
+            });
+        });
+
+        async function loadVariables() {
+            try {
+                const response = await fetch('/get-json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                return data.functionsInfo;
+            } catch (error) {
+                console.error('Error loading JSON:', error);
+                return [];
+            }
+        }
+
+        async function generateEquations() {
+            const equationsTable = document.getElementById('equationsTable');
+            const functionsInfo = await loadVariables();
+
+            functionsInfo.forEach((func, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="equation">
+                        f<sub>${index + 1}</sub> = <input type="number" id="a${index + 1}" class="coef-input">L<sub>${func.variable}</sub>(t)<sup>3</sup> +
+                        <input type="number" id="b${index + 1}" class="coef-input">L<sub>${func.variable}</sub>(t)<sup>2</sup> +
+                        <input type="number" id="c${index + 1}" class="coef-input">L<sub>${func.variable}</sub>(t) +
+                        <input type="number" id="d${index + 1}" class="coef-input">
+                    </td>
+                `;
+                equationsTable.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', generateEquations);
+
+        document.getElementById("random").addEventListener("click", randomizeValues);
+        function randomizeValues() {
+            const chanceInput = document.getElementById("chanceInput").value;
+            const zeroChance = parseFloat(chanceInput);
+
+            function getRandomValue() {
+                return Math.random();
+            }
+
+            function getConditionalRandom() {
+                return Math.random() > zeroChance ? getRandomValue() : 0.0;
+            }
+
+            for (let i = 1; i <= 15; i++) {
+                var randomVal = getRandomValue().toFixed(2);
+                document.getElementById(`L${i}`).value = randomVal;
+                document.getElementById(`L${i}_max`).value = randomVal;
+            }
+
+            for (let i = 1; i <= 28; i++) {
+                document.getElementById(`a${i}`).value = getConditionalRandom().toFixed(2);
+                document.getElementById(`b${i}`).value = getConditionalRandom().toFixed(2);
+                document.getElementById(`c${i}`).value = getConditionalRandom().toFixed(2);
+                document.getElementById(`d${i}`).value = getConditionalRandom().toFixed(2);
+            }
+        }
+
+        document.getElementById("calculate").addEventListener("click", function() {
+            const formData = new FormData();
+            const startValues = [];
+            const maxValues = [];
+            const coefs = [];
+
+            for (let i = 1; i <= 15; i++) {
+                startValues.push(parseFloat(document.getElementById(`L${i}`).value) || 0);
+                maxValues.push(parseFloat(document.getElementById(`L${i}_max`).value) || 0);
+            }
+
+            for (let i = 1; i <= 28; i++) {
+                coefs.push([
+                    parseFloat(document.getElementById(`a${i}`).value) || 0,
+                    parseFloat(document.getElementById(`b${i}`).value) || 0,
+                    parseFloat(document.getElementById(`c${i}`).value) || 0,
+                    parseFloat(document.getElementById(`d${i}`).value) || 0
+                ]);
+            }
+
+            formData.append('startValues', JSON.stringify(startValues));
+            formData.append('maxValues', JSON.stringify(maxValues));
+            formData.append('coefs', JSON.stringify(coefs));
+
+            fetch("/calculate/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById("results");
+                const newResult = `
+                    <div class="result-item">
+                        <img src="data:image/png;base64,${data.image1}" alt="График 1">
+                        <img src="data:image/png;base64,${data.image2}" alt="График 2">
+                    </div>
+                `;
+
+                resultDiv.innerHTML = newResult + resultDiv.innerHTML;
+
+                const savedResults = JSON.parse(localStorage.getItem("savedResults")) || { results: [] };
+                savedResults.results.unshift({ img1: data.image1, img2: data.image2 });
+                
+                if (savedResults.results.length > 10) {
+                    savedResults.results.pop();
+                }
+
+                localStorage.setItem("savedResults", JSON.stringify(savedResults));
+            })
+            .catch(error => console.error('Ошибка:', error));
+        });
+
+        document.getElementById("saveValuesToJson").addEventListener("click", function saveToJson() {
+            const data = {
+                startValues: [],
+                maxValues: [],
+                coefs: []
+            };
+
+            for (let i = 1; i <= 15; i++) {
+                data.startValues.push(parseFloat(document.getElementById(`L${i}`).value) || 0);
+                data.maxValues.push(parseFloat(document.getElementById(`L${i}_max`).value) || 0);
+            }
+
+            for (let i = 1; i <= 28; i++) {
+                data.coefs.push([
+                    parseFloat(document.getElementById(`a${i}`).value) || 0,
+                    parseFloat(document.getElementById(`b${i}`).value) || 0,
+                    parseFloat(document.getElementById(`c${i}`).value) || 0,
+                    parseFloat(document.getElementById(`d${i}`).value) || 0
+                ]);
+            }
+
+            const jsonData = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonData], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "epidemic_data.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('loadValuesFromJson').addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const jsonData = JSON.parse(e.target.result);
+
+                    jsonData.startValues.forEach((value, index) => {
+                        document.getElementById(`L${index + 1}`).value = value;
+                    });
+
+                    jsonData.maxValues.forEach((value, index) => {
+                        document.getElementById(`L${index + 1}_max`).value = value;
+                    });
+
+                    jsonData.coefs.forEach((coef, index) => {
+                        document.getElementById(`a${index + 1}`).value = coef[0];
+                        document.getElementById(`b${index + 1}`).value = coef[1];
+                        document.getElementById(`c${index + 1}`).value = coef[2];
+                        document.getElementById(`d${index + 1}`).value = coef[3];
+                    });
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        });
+
+        document.getElementById('chanceInput').addEventListener('input', function() {
+            document.getElementById('chanceValue').textContent = this.value;
+        });
+    </script>
+</body>
+</html>
