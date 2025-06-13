@@ -1,11 +1,6 @@
 import json
-
-import uvicorn
-from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi import FastAPI, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+import matplotlib
+matplotlib.use('Agg')  # Используем backend без GUI
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -13,80 +8,97 @@ import numpy as np
 from pathlib import Path
 import os
 
+from flask import Flask, request, render_template, jsonify, send_from_directory
 from calcutalor import Calculator
 
-app = FastAPI()
+app = Flask(__name__)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+# Настройка статических файлов
+app.static_folder = 'static'
+app.template_folder = 'templates'
 
+@app.route("/")
+def read_root():
+    return render_template("index.html")
 
-
-
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
 
 JSON_FILE_PATH = Path("function-definitions.json")
-@app.get("/get-json", response_class=JSONResponse)
-async def get_json():
+
+@app.route("/get-json")
+def get_json():
     try:
         with open(JSON_FILE_PATH, "r", encoding="utf-8") as file:
             data = json.load(file)
-        return data
+        return jsonify(data)
     except FileNotFoundError:
-        return JSONResponse(
-            status_code=404,
-            content={"error": "JSON file not found"}
-        )
+        return jsonify({"error": "JSON file not found"}), 404
     except json.JSONDecodeError:
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Error decoding JSON file"}
-        )
+        return jsonify({"error": "Error decoding JSON file"}), 500
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
-@app.post("/calculate/")
-async def calculate(startValues=Form(...), maxValues=Form(...), coefs=Form(...)):
-    startValues_vals = json.loads(startValues)
-    maxValues_vals = json.loads(maxValues)
-    coefs_vals = json.loads(coefs)
+@app.route("/calculate/", methods=["POST"])
+def calculate():
+    startValues_vals = json.loads(request.form['startValues'])
+    maxValues_vals = json.loads(request.form['maxValues'])
+    coefs_vals = json.loads(request.form['coefs'])
 
     calc = Calculator(startValues_vals, maxValues_vals, coefs_vals)
     time_intervals = np.linspace(0, 1, 20)
     solution = calc.calculate(time_intervals)
 
-    # Разделение решения на отдельные переменные для удобства
-    L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15 = solution.T
+    solution_display = np.clip(solution, 0, 1)
 
-    # Визуализация графика времени
-    fig1, ax1 = plt.subplots(figsize=(16, 8))  # Увеличиваем график
+
+    # Разделение решения на отдельные переменные для удобства
+    L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15 = solution_display.T
+
+    # Визуализация графика времени (разделён на два)
+    fig1, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))  # Два графика друг под другом
 
     # Определяем все линии для удобства
-    lines = [
+    lines_group1 = [
         (L1, 'Летальность'), (L2, 'Инфицированные'), (L3, 'Население региона'),
         (L4, 'Госпитализированные'), (L5, 'Изолированность'), (L6, 'Скорость распространения'),
-        (L7, 'Доступность лекарства'), (L8, 'Тяжесть симптомов'), (L9, 'Умершие'),
-        (L10, 'Уровень медицины'), (L11, 'Инкубационный период'), (L12, 'Период развития болезни'),
-        (L13, 'Период реабилитации'), (L14, 'Устойчивость к лекарствам'), (L15, 'Степень осложнения')
+        (L7, 'Доступность лекарства'), (L8, 'Тяжесть симптомов')
     ]
 
-    # Строим линии графика
-    for L, label in lines:
+    lines_group2 = [
+        (L9, 'Умершие'), (L10, 'Уровень медицины'), (L11, 'Инкубационный период'), 
+        (L12, 'Период развития болезни'), (L13, 'Период реабилитации'), 
+        (L14, 'Устойчивость к лекарствам'), (L15, 'Степень осложнения')
+    ]   
+
+    # ПЕРВЫЙ график (верхний) - Группа 1
+    for L, label in lines_group1:
         ax1.plot(time_intervals, L, label=label)
 
-    # Отображаем значения на графике
-    for L, label in lines:
+    for L, label in lines_group1:
         for x, y in zip(time_intervals, L):
             ax1.annotate(f'{y:.2f}', xy=(x, y), xytext=(5, 5), textcoords='offset points', fontsize=8)
 
-    ax1.set_xlabel('Время')
     ax1.set_ylabel('Значения')
-    ax1.set_title('График времени')
-
-    # Устанавливаем легенду вне графика
+    ax1.set_title('График времени - Группа 1 (Основные показатели)')
     ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    ax1.grid(True, alpha=0.3)
+
+    # ВТОРОЙ график (нижний) - Группа 2
+    for L, label in lines_group2:
+        ax2.plot(time_intervals, L, label=label)
+
+    for L, label in lines_group2:
+        for x, y in zip(time_intervals, L):
+            ax2.annotate(f'{y:.2f}', xy=(x, y), xytext=(5, 5), textcoords='offset points', fontsize=8)
+
+    ax2.set_xlabel('Время')
+    ax2.set_ylabel('Значения')
+    ax2.set_title('График времени - Группа 2 (Временные показатели)')
+    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
 
@@ -148,10 +160,10 @@ async def calculate(startValues=Form(...), maxValues=Form(...), coefs=Form(...))
     plt.close(fig1)
     plt.close(fig2)
 
-    return {
+    return jsonify({
         "image1": img_str1,
         "image2": img_str2
-    }
+    })
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8000, debug=True)

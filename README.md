@@ -1,12 +1,35 @@
-Быстрый старт
+# Анализ эпидемиологической ситуации
 
-1. Клонируйте репозиторий:
-"git clone https://github.com/Exxxuberante/epidemic.git"
-"cd epidemic"
+Веб-приложение для математического моделирования распространения эпидемии на Flask.
 
-2. Локальный запуск
-Установите зависимости:
-"pip install -r requirements.txt"
+## Быстрый старт
 
-3. Запустите приложение
-"uvicorn main:app --reload"
+1. **Клонируйте репозиторий:**
+   ```bash
+   git clone https://github.com/Exxxuberante/epidemic.git
+   cd epidemic
+   ```
+
+2. **Установите зависимости:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Запустите приложение:**
+   ```bash
+   python main.py
+   ```
+   
+   Или альтернативно:
+   ```bash
+   flask run
+   ```
+
+4. **Откройте браузер:**
+   Перейдите по адресу http://localhost:8000
+
+## Для деплоя на PythonAnywhere
+
+1. Загрузите все файлы проекта в вашу папку на PythonAnywhere
+2. Установите зависимости через консоль Bash
+3. Настройте WSGI файл для Flask приложения

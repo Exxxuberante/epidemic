@@ -1,7 +1,5 @@
-uvicorn
+flask
 matplotlib
 numpy
-fastapi
 scipy
 jinja2
-python-multipart
